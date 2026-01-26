@@ -1,6 +1,15 @@
-def main():
-    print("Hello from ai-agent!")
+from client.llm_client import LLMClient
+import asyncio
+
+async def main():
+    client = LLMClient()
+    messages = [{
+        "role": "user",
+        "content": "Hello, how are you?",
+    }]
+    async for event in client.chat_completion(messages, False):
+        print(event)
+    print("Done")
 
 
-if __name__ == "__main__":
-    main()
+asyncio.run(main())
