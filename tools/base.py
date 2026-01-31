@@ -30,8 +30,8 @@ class ToolResult:
     truncated: bool = False
 
     @classmethod
-    def error_result(cls, error: str, output: str = "") -> ToolResult:
-        return cls(output=output, success=False, error=error)
+    def error_result(cls, error: str, output: str = "", **kwargs: Any) -> ToolResult:
+        return cls(output=output, success=False, error=error, **kwargs)
 
     @classmethod
     def success_result(cls, output: str, **kwargs: Any) -> ToolResult:
