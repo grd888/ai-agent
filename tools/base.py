@@ -27,6 +27,15 @@ class ToolResult:
     success: bool
     error: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+    truncated: bool = False
+
+    @classmethod
+    def error_result(cls, error: str, output: str = "") -> ToolResult:
+        return cls(output=output, success=False, error=error)
+
+    @classmethod
+    def success_result(cls, output: str, **kwargs: Any) -> ToolResult:
+        return cls(output=output, success=True, error=None, **kwargs)
 
 
 class ToolKind(str, Enum):
@@ -105,15 +114,17 @@ class Tool(abc.ABC):
             }
         if isinstance(schema, dict):
             result = {
-              "name": self.name,
-              "description": self.description,
+                "name": self.name,
+                "description": self.description,
             }
-            
-            if 'parameters' in schema:
-              result['parameters'] = schema['parameters']
+
+            if "parameters" in schema:
+                result["parameters"] = schema["parameters"]
             else:
-              result["parameters"] = schema
-              
+                result["parameters"] = schema
+
             return result
-          
-        raise ValueError(f"Unsupported schema type for tool {self.name}: {type(schema)}")
+
+        raise ValueError(
+            f"Unsupported schema type for tool {self.name}: {type(schema)}"
+        )
