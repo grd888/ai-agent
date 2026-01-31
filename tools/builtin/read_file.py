@@ -35,9 +35,6 @@ class ReadFileTool(Tool):
     MAX_FILE_SIZE = 1024 * 1024 * 10
     MAX_OUTPUT_TOKENS = 25000
 
-    def count_tokens(self, text: str) -> int:
-        return len(text.split())
-
     async def execute(self, invocation: ToolInvocation) -> ToolResult:
         params = ReadFileParameters(**invocation.params)
         path = resolve_path(invocation.cwd, params.path)
@@ -49,6 +46,7 @@ class ReadFileTool(Tool):
             return ToolResult.error_result(f"Path is not a file: {path}")
 
         file_size = path.stat().st_size
+        
         if file_size > self.MAX_FILE_SIZE:
             return ToolResult.error_result(
                 f"File is too large ({file_size / (1024 * 1024):.2f} MB). Max file size is {self.MAX_FILE_SIZE / (1024 * 1024):.0f} MB."
@@ -81,9 +79,10 @@ class ReadFileTool(Tool):
                 )
 
             start_idx = max(0, params.offset - 1)
-            end_idx = (
-                min(total_lines, start_idx + params.limit) if params.limit else total_lines
-            )
+            if params.limit is not None:
+                end_idx = min(start_idx + params.limit, total_lines)
+            else:
+                end_idx = total_lines
 
             selected_lines = lines[start_idx:end_idx]
             formatted_lines = []
