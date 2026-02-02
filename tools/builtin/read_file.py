@@ -30,7 +30,7 @@ class ReadFileTool(Tool):
         "Cannot read binary files (images, executables, etc.)."
     )
     kind = ToolKind.READ
-    schema: ReadFileParameters
+    schema = ReadFileParameters
 
     MAX_FILE_SIZE = 1024 * 1024 * 10
     MAX_OUTPUT_TOKENS = 25000
@@ -46,7 +46,7 @@ class ReadFileTool(Tool):
             return ToolResult.error_result(f"Path is not a file: {path}")
 
         file_size = path.stat().st_size
-        
+
         if file_size > self.MAX_FILE_SIZE:
             return ToolResult.error_result(
                 f"File is too large ({file_size / (1024 * 1024):.2f} MB). Max file size is {self.MAX_FILE_SIZE / (1024 * 1024):.0f} MB."
