@@ -50,7 +50,7 @@ class ToolCallDelta:
 class ToolCall:
     call_id: str
     name: str | None = None
-    arguments_delta: str = ""
+    arguments: str = ""
 
 
 @dataclass
@@ -60,7 +60,7 @@ class StreamEvent:
     error: str | None = None
     finish_reason: str | None = None
     tool_call_delta: ToolCallDelta | None = None
-    tool_call: ToolCall
+    tool_call: ToolCall | None = None
     usage: TokenUsage | None = None
 
 

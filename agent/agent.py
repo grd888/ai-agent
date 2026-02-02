@@ -36,6 +36,7 @@ class Agent:
             self.context_manager.get_messages(),
             tools=tool_schemas if tool_schemas else None,
         ):
+            print(event)
             if event.type == StreamEventType.TEXT_DELTA and event.text_delta:
                 if event.text_delta:
                     content = event.text_delta.content

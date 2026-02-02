@@ -63,7 +63,7 @@ class LLMClient:
         client = self.get_client()
 
         kwargs = {
-            "model": "nvidia/nemotron-3-nano-30b-a3b:free",
+            "model": "mistralai/devstral-2512",
             "messages": messages,
             "stream": stream,
         }
@@ -177,15 +177,15 @@ class LLMClient:
                                     ),
                                 )
 
-            for idx, tc in tool_calls.items():
-                yield StreamEvent(
-                    type=StreamEventType.TOOL_CALL_COMPLETE,
-                    tool_call=ToolCall(
-                        call_id=tc["id"],
-                        name=tc["name"],
-                        arguments=parse_tool_call_arguments(tc["arguments"]),
-                    ),
-                )
+        for idx, tc in tool_calls.items():
+            yield StreamEvent(
+                type=StreamEventType.TOOL_CALL_COMPLETE,
+                tool_call=ToolCall(
+                    call_id=tc["id"],
+                    name=tc["name"],
+                    arguments=parse_tool_call_arguments(tc["arguments"]),
+                ),
+            )
 
         yield StreamEvent(
             type=StreamEventType.MESSAGE_COMPLETE,
@@ -206,12 +206,14 @@ class LLMClient:
         tool_calls: list[ToolCall] = []
         if message.tool_calls:
             for tc in message.tool_calls:
-                tool_calls.append(ToolCall(
-                    call_id=tc.id,
-                    name=tc.function.name,
-                    arguments=parse_tool_call_arguments(tc.function.arguments),
-                ))
-        
+                tool_calls.append(
+                    ToolCall(
+                        call_id=tc.id,
+                        name=tc.function.name,
+                        arguments=parse_tool_call_arguments(tc.function.arguments),
+                    )
+                )
+
         usage = None
         if response.usage:
             usage = TokenUsage(
