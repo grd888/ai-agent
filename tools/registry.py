@@ -43,7 +43,7 @@ class ToolRegistry:
         return [tool.to_openai_schema() for tool in self.get_tools()]
 
     async def invoke(
-        self, name: str, params: dict[str, Any], cwd: Path | None
+        self, name: str, params: dict[str, Any], cwd: Path
     ) -> ToolResult:
         tool = self.get(name)
         if tool is None:
@@ -63,7 +63,7 @@ class ToolRegistry:
         except Exception as e:
             logger.exception(f"Failed to execute tool: {name}")
             return ToolResult.error_result(
-                f"Failed to execute tool: {str(e)}", metadata={"tool_name": name}
+                f"Internal Error: {str(e)}", metadata={"tool_name": name}
             )
             
 def create_default_registry() -> ToolRegistry:

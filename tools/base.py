@@ -23,8 +23,8 @@ class ToolConfirmation:
 
 @dataclass
 class ToolResult:
-    output: str
     success: bool
+    output: str
     error: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
     truncated: bool = False
@@ -36,6 +36,12 @@ class ToolResult:
     @classmethod
     def success_result(cls, output: str, **kwargs: Any) -> ToolResult:
         return cls(output=output, success=True, error=None, **kwargs)
+
+    def to_model_output(self) -> str:
+        if self.success:
+            return self.output
+        else:
+            return f"Error: {self.error}\n\nOutput:\n{self.output}"
 
 
 class ToolKind(str, Enum):
@@ -67,7 +73,7 @@ class Tool(abc.ABC):
         schema = self.schema
         if isinstance(schema, type) and issubclass(schema, BaseModel):
             try:
-                BaseModel(**params)
+                schema(**params)
             except ValidationError as e:
                 errors = []
                 for error in e.errors():
