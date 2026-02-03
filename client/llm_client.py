@@ -43,7 +43,7 @@ class LLMClient:
                     "name": tool["name"],
                     "description": tool.get("description", ""),
                     "parameters": tool.get(
-                        "paramaeters",
+                        "parameters",
                         {
                             "type": "object",
                             "properties": {},
