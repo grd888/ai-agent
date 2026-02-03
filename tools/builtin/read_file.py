@@ -91,7 +91,7 @@ class ReadFileTool(Tool):
 
             output = "\n".join(formatted_lines)
 
-            token_count = count_tokens(output)
+            token_count = count_tokens(output, "mistralai/devstral-2512")
             truncated = False
             if token_count > self.MAX_OUTPUT_TOKENS:
                 output = truncate_text(

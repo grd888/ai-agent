@@ -12,7 +12,7 @@ def resolve_path(base: str | Path, path: str | Path):
 def is_binary_file(path: str | Path) -> bool:
     try:
         with open(path, "rb") as f:
-            chunk = f.read(1024)
+            chunk = f.read(8192)
             return b"\x00" in chunk
     except (IOError, OSError):
         return False
