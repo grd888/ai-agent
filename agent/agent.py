@@ -50,7 +50,20 @@ class Agent:
             elif event.type == StreamEventType.ERROR:
                 yield AgentEvent.agent_error(event.error or "Unknown error occurred")
 
-        self.context_manager.add_assistant_message(response_text or None)
+        self.context_manager.add_assistant_message(
+            response_text or None,
+            [
+                {
+                    "id": tc.call_id,
+                    "type": "function",
+                    "function": {
+                        "name": tc.name,
+                        "arguments": str(tc.arguments),
+                    },
+                }
+                for tc in tool_calls
+            ] if tool_calls else None,
+        )
         if response_text:
             yield AgentEvent.text_complete(response_text)
 
@@ -64,9 +77,7 @@ class Agent:
             )
 
             result = await self.tool_registry.invoke(
-                tool_call.name, 
-                tool_call.arguments, 
-                Path.cwd()
+                tool_call.name, tool_call.arguments, Path.cwd()
             )
 
             yield AgentEvent.tool_call_complete(
@@ -88,8 +99,6 @@ class Agent:
                 tool_result.tool_call_id,
                 tool_result.content,
             )
-
-        
 
     async def __aenter__(self) -> Agent:
         return self

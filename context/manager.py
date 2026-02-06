@@ -3,6 +3,7 @@ from prompts.system import get_system_prompt
 from utils.text import count_tokens
 from typing import Any
 
+
 @dataclass
 class MessageItem:
     role: str
@@ -40,11 +41,19 @@ class ContextManager:
         )
         self._messages.append(item)
 
-    def add_assistant_message(self, content: str) -> None:
+    def add_assistant_message(
+        self,
+        content: str,
+        tool_calls: list[dict[str, Any]],
+    ) -> None:
         item = MessageItem(
             role="assistant",
             content=content or "",
-            token_count=count_tokens(content or "", self._model_name),
+            token_count=count_tokens(
+                content or "",
+                self._model_name,
+            ),
+            tool_calls=tool_calls or [],
         )
         self._messages.append(item)
 
@@ -64,6 +73,6 @@ class ContextManager:
             messages.append({"role": "system", "content": self._system_prompt})
 
         for item in self._messages:
-          messages.append(item.to_dict())
-        
+            messages.append(item.to_dict())
+
         return messages
