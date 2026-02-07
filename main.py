@@ -1,40 +1,42 @@
 import sys
-from typing import Any
 from agent.agent import Agent
 import asyncio
 import click
 from pathlib import Path
 from agent.events import AgentEventType
+from config.config import Config
+from config.loader import load_config
 from ui.tui import TUI, get_console
 
 console = get_console()
 
 
 class CLI:
-    def __init__(self):
+    def __init__(self, config: Config):
         self.agent: Agent | None = None
         self.tui = TUI(console)
+        self.config = config
 
     async def run_single(self, message: str) -> str | None:
-        async with Agent() as agent:
+        async with Agent(self.config) as agent:
             self.agent = agent
             return await self.__process_message(message)
-        
+
     async def run_interactive(self) -> str | None:
         self.tui.print_welcome(
             "AI Agent",
             lines=[
                 "model: mistralai/devstral-2512",
                 f"cwd: {Path.cwd()}",
-                "commands: /help /config /approval /model /exit"
-            ]
+                "commands: /help /config /approval /model /exit",
+            ],
         )
-        async with Agent() as agent:
+        async with Agent(self.config) as agent:
             self.agent = agent
-            
+
             while True:
                 try:
-                    user_input =console.input("\n[user]>[/user] ").strip()
+                    user_input = console.input("\n[user]>[/user] ").strip()
                     if not user_input:
                         continue
                     await self.__process_message(user_input)
@@ -43,7 +45,7 @@ class CLI:
                 except EOFError:
                     console.print("\n")
                     break
-            
+
         console.print("\n[dim]Goodbye![/dim]")
 
     def _get_tool_kind(self, tool_name: str) -> str | None:
@@ -114,14 +116,35 @@ class CLI:
 
 @click.command()
 @click.argument("prompt", required=False)
-def main(prompt: str | None):
-    cli = CLI()
+@click.option(
+    "--cwd",
+    "-c",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="Working directory for the agent",
+)
+def main(prompt: str | None, cwd: Path | None):
+
+    try:
+        config = load_config(cwd=cwd)
+    except Exception as e:
+        console.print(f"[error]Error loading config: {e}[/error]")
+        sys.exit(1)
+
+    errors = config.validate()
+    if errors:
+        console.print("[error]Configuration errors:[/error]")
+        for error in errors:
+            console.print(f"[error]{error}[/error]")
+        sys.exit(1)
+
+    cli = CLI(config)
     if prompt:
         result = asyncio.run(cli.run_single(prompt))
         if result is None:
             sys.exit(1)
     else:
         asyncio.run(cli.run_interactive())
+
 
 if __name__ == "__main__":
     main()
