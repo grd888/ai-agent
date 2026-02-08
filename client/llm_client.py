@@ -65,7 +65,7 @@ class LLMClient:
         client = self.get_client()
 
         kwargs = {
-            "model": "mistralai/devstral-2512",
+            "model": self.config.model_name,
             "messages": messages,
             "stream": stream,
         }

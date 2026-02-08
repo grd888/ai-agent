@@ -26,7 +26,7 @@ class CLI:
         self.tui.print_welcome(
             "AI Agent",
             lines=[
-                "model: mistralai/devstral-2512",
+                f"model: {self.config.model_name}",
                 f"cwd: {Path.cwd()}",
                 "commands: /help /config /approval /model /exit",
             ],

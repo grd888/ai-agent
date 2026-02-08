@@ -13,7 +13,7 @@ class Agent:
     def __init__(self, config: Config):
         self.config = config
         self.client = LLMClient(config=config)
-        self.context_manager = ContextManager()
+        self.context_manager = ContextManager(config=config)
         self.tool_registry = create_default_registry()
 
     async def run(self, message: str):
