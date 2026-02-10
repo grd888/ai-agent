@@ -10,6 +10,7 @@ from rich.theme import Theme
 from pathlib import Path
 from rich import box
 import re
+from config.config import Config
 from utils.paths import display_path_rel_to_cwd
 from utils.text import truncate_text
 
@@ -52,12 +53,14 @@ def get_console() -> Console:
 class TUI:
     def __init__(
         self,
+        config: Config,
         console: Console | None = None,
     ) -> None:
         self.console = console or get_console()
         self._assistant_stream_open = False
         self._tool_args_by_call_id: dict[str, dict[str, Any]] = {}
-        self.cwd = Path.cwd()
+        self.config = config
+        self.cwd = self.config.cwd
 
     def begin_assistant(self) -> None:
         self.console.print()

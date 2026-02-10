@@ -1,11 +1,11 @@
 from datetime import datetime
 import platform
-# from config.config import Config
+from config.config import Config
 # from tools.base import Tool
 
 
 def get_system_prompt(
-    # config: Config,
+    config: Config,
     user_memory: str | None = None,
     # tools: list[Tool] | None = None,
 ) -> str:
@@ -35,6 +35,12 @@ def get_system_prompt(
         parts.append(_get_memory_section(user_memory))
     # Operational guidelines
     parts.append(_get_operational_section())
+
+    if config.developer_instructions:
+        parts.append(_get_developer_instructions_section(config.developer_instructions))
+
+    if config.user_instructions:
+        parts.append(_get_user_instructions_section(config.user_instructions))
 
     return "\n\n".join(parts)
 
