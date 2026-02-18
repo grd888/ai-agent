@@ -113,7 +113,9 @@ class LLMClient:
                 return
 
     async def _stream_response(
-        self, client: AsyncOpenAI, kwargs: dict[str, Any]
+        self, 
+        client: AsyncOpenAI, 
+        kwargs: dict[str, Any],
     ) -> AsyncGenerator[StreamEvent, None]:
         response = await client.chat.completions.create(**kwargs)
 
@@ -122,7 +124,6 @@ class LLMClient:
         tool_calls: dict[int, dict[str, Any]] = {}
 
         async for chunk in response:
-            # print(chunk)
             if hasattr(chunk, "usage") and chunk.usage:
                 usage = TokenUsage(
                     prompt_tokens=chunk.usage.prompt_tokens,
@@ -130,6 +131,7 @@ class LLMClient:
                     total_tokens=chunk.usage.total_tokens,
                     cached_tokens=chunk.usage.prompt_tokens_details.cached_tokens,
                 )
+            
             if not chunk.choices:
                 continue
 
@@ -166,18 +168,19 @@ class LLMClient:
                                         name=tool_call_delta.function.name,
                                     ),
                                 )
-                            if tool_call_delta.function.arguments:
-                                tool_calls[idx]["arguments"] += (
-                                    tool_call_delta.function.arguments
-                                )
-                                yield StreamEvent(
-                                    type=StreamEventType.TOOL_CALL_DELTA,
-                                    tool_call_delta=ToolCallDelta(
-                                        call_id=tool_calls[idx]["id"],
-                                        name=tool_call_delta.function.name,
-                                        arguments_delta=tool_call_delta.function.arguments,
-                                    ),
-                                )
+
+                        if tool_call_delta.function.arguments:
+                            tool_calls[idx]["arguments"] += (
+                                tool_call_delta.function.arguments
+                            )
+                            yield StreamEvent(
+                                type=StreamEventType.TOOL_CALL_DELTA,
+                                tool_call_delta=ToolCallDelta(
+                                    call_id=tool_calls[idx]["id"],
+                                    name=tool_call_delta.function.name,
+                                    arguments_delta=tool_call_delta.function.arguments,
+                                ),
+                            )
 
         for idx, tc in tool_calls.items():
             yield StreamEvent(

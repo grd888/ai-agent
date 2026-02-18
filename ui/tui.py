@@ -269,7 +269,7 @@ class TUI:
         else:
             output_display = truncate_text(output, "", 240)
             blocks.append(
-                Text(
+                Syntax(
                     output_display,
                     "text",
                     theme="monokai",
