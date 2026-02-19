@@ -9,7 +9,7 @@ from config.config import Config
 class Agent:
     def __init__(self, config: Config):
         self.config = config
-        self.session: Session | None = Session(config=config)        
+        self.session: Session | None = Session(config=config)
 
     async def run(self, message: str):
         yield AgentEvent.agent_start(message)
@@ -47,26 +47,31 @@ class Agent:
                         tool_calls.append(event.tool_call)
 
                 elif event.type == StreamEventType.ERROR:
-                    yield AgentEvent.agent_error(event.error or "Unknown error occurred")
+                    yield AgentEvent.agent_error(
+                        event.error or "Unknown error occurred"
+                    )
 
             self.session.context_manager.add_assistant_message(
                 response_text or None,
-                [
-                    {
-                        "id": tc.call_id,
-                        "type": "function",
-                    "function": {
-                        "name": tc.name,
-                        "arguments": str(tc.arguments),
-                    },
-                }
-                for tc in tool_calls
-            ] if tool_calls else None,
+                (
+                    [
+                        {
+                            "id": tc.call_id,
+                            "type": "function",
+                            "function": {
+                                "name": tc.name,
+                                "arguments": str(tc.arguments),
+                            },
+                        }
+                        for tc in tool_calls
+                    ]
+                    if tool_calls
+                    else None
+                ),
             )
-
             if response_text:
                 yield AgentEvent.text_complete(response_text)
-                
+
             if not tool_calls:
                 return
 
@@ -74,19 +79,21 @@ class Agent:
 
             for tool_call in tool_calls:
                 yield AgentEvent.tool_call_start(
-                    call_id=tool_call.call_id,
-                    name=tool_call.name,
-                    arguments=tool_call.arguments,
+                    tool_call.call_id,
+                    tool_call.name,
+                    tool_call.arguments,
                 )
 
                 result = await self.session.tool_registry.invoke(
-                    tool_call.name, tool_call.arguments, self.config.cwd
+                    tool_call.name,
+                    tool_call.arguments,
+                    self.config.cwd,
                 )
 
                 yield AgentEvent.tool_call_complete(
-                    call_id=tool_call.call_id,
-                    name=tool_call.name,
-                    result=result,
+                    tool_call.call_id,
+                    tool_call.name,
+                    result,
                 )
 
                 tool_call_results.append(
@@ -106,7 +113,12 @@ class Agent:
     async def __aenter__(self) -> Agent:
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+    async def __aexit__(
+        self,
+        exc_type,
+        exc_val,
+        exc_tb,
+    ) -> None:
         if self.session and self.session.client:
             await self.session.client.close()
             self.session = None

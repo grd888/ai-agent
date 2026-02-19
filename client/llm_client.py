@@ -2,7 +2,6 @@ import asyncio
 from typing import Any, AsyncGenerator
 from openai import APIConnectionError, APIError, AsyncOpenAI, RateLimitError
 from dotenv import load_dotenv
-import os
 
 from client.response import (
     StreamEventType,
